@@ -20,6 +20,14 @@ contract FundMe {
     address[] public funders;
     mapping(address => uint256) public addressToAmountFunded;
 
+    address public owner;
+    
+    // constructor gets called whenever a contract is deployed
+    constructor() {
+        // owner gets set to the address that deploys the contract
+        owner = msg.sender;
+    } 
+
     function fund() public payable {
 
         // msg.value is in wei 
@@ -31,8 +39,31 @@ contract FundMe {
 
     }
 
-    function withdraw() public {
-        
+    // function will run the modifier first, followed by the rest of the code
+    function withdraw() public onlyOwner{
+
+        // only owner of the contract can withdraw the fund
+        // require(msg.sender == owner, "Sender is not owner!");
+
+        for(uint256 fundIndex = 0; fundIndex < funders.length; fundIndex++) {
+            address funder = funders[fundIndex];
+            addressToAmountFunded[funder] = 0;
+        }
+
+        // new address array with 0 element
+        funders = new address[](0);
+
+        // transfer the money
+        (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
+        require(callSuccess, "Call failed");        
     }
+
+    // function decorator
+    modifier onlyOwner {
+        // only owner of the contract can withdraw the fund
+        require(msg.sender == owner, "Sender is not owner!");
+        _;
+    }
+
 }
 
