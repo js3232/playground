@@ -5,6 +5,10 @@
 // Interacted with a Chainlink Oracle on test net to get the latest price of ETH/ USD
 // Deployed a Chainlink Oracle contract on test net; sent testnet Link and use to query for 
 // ETH trading volume in the past 24 hours.
+
+// Gas savings concept: Immutable/ Constant/ Customized Errors
+// Immutable variables can be declared and set inside a constructor
+
 pragma solidity ^0.8.0;
 
 import "./PriceConverter.sol";
@@ -40,7 +44,7 @@ contract FundMe {
     }
 
     // function will run the modifier first, followed by the rest of the code
-    function withdraw() public onlyOwner{
+    function withdraw() public onlyOwner {
 
         // only owner of the contract can withdraw the fund
         // require(msg.sender == owner, "Sender is not owner!");
@@ -63,6 +67,17 @@ contract FundMe {
         // only owner of the contract can withdraw the fund
         require(msg.sender == owner, "Sender is not owner!");
         _;
+    }
+
+    // if someone send ETH to the contract without calling the fund function and without any call data
+    receive() external payable {
+        // route them to the fund function
+        fund();
+    }
+
+    // if someone send ETH to the contract without calling the fund function and with call data, e.g. 0x00
+    fallback() external payable {
+        fund();
     }
 
 }
